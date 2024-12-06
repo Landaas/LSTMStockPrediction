@@ -10,12 +10,12 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from itertools import product
 
 
-look_back = [10, 50, 100, 200]
-batch_size = [16, 32, 64, 128]
-epochs = [10, 50, 100, 200]
-lstm_values = [50, 100, 200, 300]
-lstm_models = [1, 2, 3]
-dropout_values = [0,0.2, 0.3, 0.4]
+look_back = [10, 50, 200]
+batch_size = [16, 32]
+epochs = [5, 10]
+lstm_values = [50, 100]
+lstm_models = [0, 1]
+dropout_values = [0,0.2]
 
 # Load all data from the data folder
 data_folder_path = 'data'
@@ -29,7 +29,7 @@ def create_sequences(dataset, look_back):
 
 def load_data_from_folder_and_train_model(folder_path, look_back, epochs, batch_size):  
     for filename in os.listdir(folder_path):
-        if filename.endswith('.csv') and filename != 'TOT.csv':
+        if filename.endswith('.csv') and filename:
             file_path = os.path.join(folder_path, filename)
             data = pd.read_csv(file_path)
 
@@ -64,8 +64,13 @@ def load_data_from_folder_and_train_model(folder_path, look_back, epochs, batch_
 for look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values in product(look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values):
     # Create model
     model = Sequential()
-    for i in range(lstm_models):
-        model.add(LSTM(lstm_values, return_sequences=True, input_shape=(look_back, 6)))
+    # First LSTM layer needs input_shape
+    model.add(LSTM(lstm_values, return_sequences=True, input_shape=(look_back, 6)))
+    model.add(Dropout(dropout_values))
+
+    # Additional LSTM layers from the loop
+    for _ in range(lstm_models):  # Start from 1 since the first layer is added above
+        model.add(LSTM(lstm_values, return_sequences=True))
         model.add(Dropout(dropout_values))
 
     model.add(LSTM(50))
@@ -80,7 +85,7 @@ for look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values in p
     load_data_from_folder_and_train_model(data_folder_path, look_back, epochs, batch_size)
 
     #test the model
-    data = pd.read_csv('data/TOT.csv')
+    data = pd.read_csv('TOT.csv')
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.sort_values('Date')
     data.reset_index(drop=True, inplace=True)
