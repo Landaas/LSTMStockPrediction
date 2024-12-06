@@ -32,32 +32,30 @@ def process_files(base_directory):
     result_dict = {}
     for root, _, files in os.walk(base_directory):
         dir = os.path.basename(os.path.normpath(root))
-        if dir != 'ABB' or dir != 'AAPL':
-            
-            result_dict[dir] = {}
-            for file in files:
-                file_path = os.path.join(root, file)
-                scores = []
-                count = 0
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        for line_number, line in enumerate(f, start=1):
-                            try:
-                                # Attempt to parse the line as JSON
-                                data = json.loads(line.strip())
-                                if isinstance(data, dict) and "text" in data:
-                                    text = clean_tweet(data['text'])
-                                    scores.append(sentiment(text))
-                                    count += 1
-                                    
-                            except json.JSONDecodeError:
-                                print(f"Invalid JSON in file: {file_path} (Line {line_number})")
-                        result_dict[dir][file] = (statistics.median(scores), count)
-                        print(result_dict[dir][file])
-                    
-                except (OSError, IOError) as e:
-                    print(f"Error opening file: {file_path}. Error: {e}")
-            write_dict(result_dict)
+        result_dict[dir] = {}
+        for file in files:
+            file_path = os.path.join(root, file)
+            scores = []
+            count = 0
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    for line_number, line in enumerate(f, start=1):
+                        try:
+                            # Attempt to parse the line as JSON
+                            data = json.loads(line.strip())
+                            if isinstance(data, dict) and "text" in data:
+                                text = clean_tweet(data['text'])
+                                scores.append(sentiment(text))
+                                count += 1
+                                
+                        except json.JSONDecodeError:
+                            print(f"Invalid JSON in file: {file_path} (Line {line_number})")
+                    result_dict[dir][file] = (statistics.median(scores), count)
+                
+            except (OSError, IOError) as e:
+                print(f"Error opening file: {file_path}. Error: {e}")
+        write_dict(result_dict)
+        print(f'{dir} complete')
 
 # Replace 'your_directory_path' with the base directory to start searching
 base_directory = "tweet/raw"

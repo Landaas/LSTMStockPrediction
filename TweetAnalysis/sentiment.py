@@ -1,6 +1,17 @@
 from transformers import pipeline
+import torch
 
-classifier = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+# Verify CUDA is available
+print("Is CUDA available?", torch.cuda.is_available())
+
+# If True, create pipeline on GPU; if not, it will fall back to CPU
+device = 0 if torch.cuda.is_available() else -1
+
+classifier = pipeline(
+    "sentiment-analysis", 
+    model="distilbert-base-uncased-finetuned-sst-2-english",
+    device=device
+)
 
 def sentiment(text):
     classification = classifier(text)
