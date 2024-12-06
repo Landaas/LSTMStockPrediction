@@ -23,8 +23,8 @@ def run_model(path, days_ahead):
     features = ['Open', 'High', 'Low', 'Adj Close', 'Volume']
     #target = 'Close'
     
-    # Shifted target column to predict x days ahead
-    data['Target'] = data['Close'].shift(days_ahead)
+    # Shifted target column to predict x days ahead, -days ahead because using target x days ahead
+    data['Target'] = data['Close'].shift(-days_ahead)
     
     # Drop rows with missing values
     data.dropna(inplace=True)
