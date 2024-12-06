@@ -1,12 +1,12 @@
 import torch
-from dataset import test_loader
+from dataset import test_loader, val_loader
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from load import scaler
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = torch.load('models/test.pth')
+model = torch.load('models/test.pth', map_location=torch.device('cpu'))
 
 model.eval()
 predictions = []
@@ -24,6 +24,7 @@ with torch.no_grad():
 
 predictions = np.concatenate(predictions)
 true_values = np.concatenate(true_values)
+print(predictions)
 
 num_features = len(['Open','High','Low','Close','Volume'])
 close_col_idx = 3  

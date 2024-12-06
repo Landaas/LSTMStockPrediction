@@ -45,4 +45,4 @@ def create_sequences(data, features, target, window_size=30):
         y.append(data[target].iloc[i+window_size])
     return np.array(X), np.array(y)
 
-X, y = create_sequences(df, features, target, pre_days)
+X, y = create_sequences(full_dataset, features, target, pre_days)
