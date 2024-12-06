@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Data path - based on workdir
 path = 'MultiCompany/data'
@@ -48,12 +49,22 @@ def run_model(path, days_ahead):
     rmse = mse ** 0.5
     r2 = r2_score(y_test, predictions)
     
+    # Calculate MAPE
+    mape = np.mean(np.abs((y_test - predictions) / y_test)) * 100
+
+    # Accuracy derived from MAPE
+    accuracy = 100 - mape
+
     print(f"Model: Linear regression")
-    print(f"Predicting {days_ahead} days ahead")
     print(f"Mean Absolute Error (MAE): {mae}")
     print(f"Mean Squared Error (MSE): {mse}")
     print(f"Root Mean Squared Error (RMSE): {rmse}")
     print(f"R^2 Score: {r2}")
+    print(f"Mean Absolute Percentage Error (MAPE): {mape}%")
+    print(f"Accuracy: {accuracy}%")
+    tolerance = 0.05  # 5% tolerance
+    within_tolerance = np.mean(np.abs((y_test - predictions) / y_test) <= tolerance) * 100
+    print(f"Percentage of predictions within 5% tolerance: {within_tolerance}%")
     
     # Plotting actual vs predicted prices
     plt.figure(figsize=(10, 6))
@@ -66,7 +77,7 @@ def run_model(path, days_ahead):
     plt.show()
 
 # Loop through all the stocks and predict for x days ahead
-days_ahead = 40
+days_ahead = 20
 for filename in os.listdir(path):
     if filename.endswith('.csv'):
         file = os.path.join(path, filename)
