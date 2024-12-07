@@ -9,7 +9,7 @@ target = 'Target'
 pre_days = 50
 
 # Suppose your CSV files are in a directory called 'data'
-file_paths = glob("data/*.csv")  # Get all csv files in data directory
+file_paths = glob("subset/*.csv")  # Get all csv files in data directory
 dataframes = []
 for fp in file_paths:
     df = pd.read_csv(fp, parse_dates=['Date'], index_col='Date')

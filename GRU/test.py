@@ -1,4 +1,5 @@
 import torch
+from torch.utils.data import Subset
 from dataset import test_loader, val_loader
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
@@ -12,6 +13,7 @@ model.eval()
 predictions = []
 true_values = []
 
+
 with torch.no_grad():
     for X_batch, y_batch in test_loader:
         X_batch = X_batch.to(device)  
@@ -24,7 +26,6 @@ with torch.no_grad():
 
 predictions = np.concatenate(predictions)
 true_values = np.concatenate(true_values)
-print(predictions)
 
 num_features = len(['Open','High','Low','Close','Volume'])
 close_col_idx = 3  
@@ -45,8 +46,8 @@ true_values_inverted = temp_true_inverted[:, close_col_idx]
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(12,6))
-plt.plot(true_values_inverted, label='True Values')
-plt.plot(predictions_inverted, label='Predictions')
+plt.plot(true_values_inverted[:100], label='True Values')
+plt.plot(predictions_inverted[:100], label='Predictions')
 plt.title('Model Predictions vs True Values on Test Set')
 plt.xlabel('Time Step')
 plt.ylabel('Price')
