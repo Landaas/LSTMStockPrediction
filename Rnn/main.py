@@ -14,7 +14,7 @@ look_back = [10, 50]
 batch_size = [16]
 epochs = [5, 10]
 neurons = [50, 100]
-lstm_models = [0]
+layers = [0]
 dropout_values = [0, 0.2]
 
 # Load all data from the data folder
@@ -61,19 +61,17 @@ def load_data_from_folder_and_train_model(folder_path, look_back, epochs, batch_
             test_loss = model.evaluate(X_test, y_test)
             print(f'Test Loss: {test_loss}')
             
-for look_back, batch_size, epochs, neurons, lstm_models, dropout_values in product(look_back, batch_size, epochs, neurons, lstm_models, dropout_values):
+for look_back, batch_size, epochs, neurons, layers, dropout_values in product(look_back, batch_size, epochs, neurons, layers, dropout_values):
     # Create model
     model = Sequential()
-    # First LSTM layer needs input_shape
     model.add(SimpleRNN(neurons, return_sequences=True, input_shape=(look_back, 6)))
     model.add(Dropout(dropout_values))
 
-    # Additional LSTM layers from the loop
-    for _ in range(lstm_models):
+    for _ in range(layers):
         model.add(SimpleRNN(neurons, return_sequences=True))
         model.add(Dropout(dropout_values))
 
-    model.add(SimpleRNN(50))  # Replace final LSTM layer with SimpleRNN
+    model.add(SimpleRNN(50))
     model.add(Dense(1,activation='sigmoid'))
 
     # Compile the model
@@ -123,7 +121,7 @@ for look_back, batch_size, epochs, neurons, lstm_models, dropout_values in produ
     plt.xlabel('Time')
     plt.ylabel('Stock Price')
     plt.legend()
-    plot_filename = f'actual_vs_predicted_prices,{look_back},{batch_size},{epochs},{neurons},{lstm_models},{dropout_values}.png'
+    plot_filename = f'actual_vs_predicted_prices,{look_back},{batch_size},{epochs},{neurons},{layers},{dropout_values}.png'
     plt.savefig(os.path.join('graphs', plot_filename))
 
     # Save the evaluation results to a CSV file
@@ -135,8 +133,8 @@ for look_back, batch_size, epochs, neurons, lstm_models, dropout_values in produ
 
     # Append the evaluation results to the CSV file
     with open(results_file, 'a') as f:
-        f.write(f'{mse},{mae},{rmse},{mape},{r2},{look_back},{batch_size},{epochs},{neurons},{lstm_models},{dropout_values}\n')
+        f.write(f'{mse},{mae},{rmse},{mape},{r2},{look_back},{batch_size},{epochs},{neurons},{layers},{dropout_values}\n')
 
     # Save the model
-    model_filename = f'stock_price_prediction_model,{look_back},{batch_size},{epochs},{neurons},{lstm_models},{dropout_values}.keras'
+    model_filename = f'stock_price_prediction_model,{look_back},{batch_size},{epochs},{neurons},{layers},{dropout_values}.keras'
     model.save(os.path.join('models', model_filename))

@@ -66,12 +66,10 @@ def load_data_from_folder_and_train_model(folder_path, look_back, epochs, batch_
 for look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values, shift in product(look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values, shift):
     # Create model
     model = Sequential()
-    # First LSTM layer needs input_shape
     model.add(LSTM(lstm_values, return_sequences=True, input_shape=(look_back, 6)))
     model.add(Dropout(dropout_values))
 
-    # Additional LSTM layers from the loop
-    for _ in range(lstm_models):  # Start from 1 since the first layer is added above
+    for _ in range(lstm_models):  
         model.add(LSTM(lstm_values, return_sequences=True))
         model.add(Dropout(dropout_values))
 
