@@ -41,7 +41,6 @@ def process_files(base_directory):
                 with open(file_path, 'r', encoding='utf-8') as f:
                     for line_number, line in enumerate(f, start=1):
                         try:
-                            # Attempt to parse the line as JSON
                             data = json.loads(line.strip())
                             if isinstance(data, dict) and "text" in data:
                                 text = clean_tweet(data['text'])
@@ -57,6 +56,5 @@ def process_files(base_directory):
         write_dict(result_dict)
         print(f'{dir} complete')
 
-# Replace 'your_directory_path' with the base directory to start searching
 base_directory = "tweet/raw"
 process_files(base_directory)
