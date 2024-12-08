@@ -10,12 +10,12 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from itertools import product
 
 
-look_back = [50]
-batch_size = [32]
-epochs = [50, 100, 200, 500, 1000]
-lstm_values = [50]
-lstm_models = [0]
-dropout_values = [0]
+look_back = [10, 50, 200]
+batch_size = [16, 32]
+epochs = [5, 10]
+lstm_values = [50, 100]
+lstm_models = [0, 1]
+dropout_values = [0,0.2]
 
 # Load all data from the data folder
 data_folder_path = 'data'
@@ -29,7 +29,7 @@ def create_sequences(dataset, look_back):
 
 def load_data_from_folder_and_train_model(folder_path, look_back, epochs, batch_size):  
     for filename in os.listdir(folder_path):
-        if filename.endswith('.csv') and filename != 'TOT.csv':
+        if filename.endswith('.csv') and filename:
             file_path = os.path.join(folder_path, filename)
             data = pd.read_csv(file_path)
 
@@ -64,18 +64,15 @@ def load_data_from_folder_and_train_model(folder_path, look_back, epochs, batch_
 for look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values in product(look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values):
     # Create model
     model = Sequential()
-    # First LSTM layer needs inputshape
-    model.add(LSTM(lstm_values, return_sequences=True, input_shape=(look_back, 8)))
+    model.add(LSTM(lstm_values, return_sequences=True, input_shape=(look_back, 6)))
     model.add(Dropout(dropout_values))
 
-    # Additional LSTM layers from the loop
-    for i in range(lstm_models):  # Start from 1 since the first layer is added above
+    for _ in range(lstm_models):
         model.add(LSTM(lstm_values, return_sequences=True))
         model.add(Dropout(dropout_values))
 
     model.add(LSTM(50))
     model.add(Dense(1))
-
 
     # Compile the model
     model.compile(optimizer='adam', loss='mean_squared_error')
@@ -86,11 +83,11 @@ for look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values in p
     load_data_from_folder_and_train_model(data_folder_path, look_back, epochs, batch_size)
 
     #test the model
-    data = pd.read_csv('data/TOT.csv')
+    data = pd.read_csv('TOT.csv')
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.sort_values('Date')
     data.reset_index(drop=True, inplace=True)
-    features = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'Tweet Score', 'Tweet Volume']
+    features = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data[features])
     scaled_data = pd.DataFrame(scaled_data, columns=features)
@@ -117,7 +114,7 @@ for look_back, batch_size, epochs, lstm_values, lstm_models, dropout_values in p
 
 
     # Plot the actual vs predicted prices
-    plt.figure(figsize=(16, 8))
+    plt.figure(figsize=(12, 6))
     plt.plot(y_test_actual, label='Actual Close Price')
     plt.plot(predictions_actual, label='Predicted Close Price')
     plt.title('Actual vs Predicted Stock Prices')
