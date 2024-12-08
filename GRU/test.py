@@ -34,7 +34,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = torch.load('models/test_epochs=50 (1).pth', map_location=device)
 model.eval()
 
-data = pd.read_csv('data/TOT.csv')
+data = pd.read_csv('TOT.csv')
 data['Date'] = pd.to_datetime(data['Date'])
 data = data.sort_values('Date')
 data.reset_index(drop=True, inplace=True)
