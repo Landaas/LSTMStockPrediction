@@ -8,8 +8,7 @@ features = ['Open', 'High', 'Low', 'Close', 'Volume']
 target = 'Target'
 pre_days = 50
 
-# Suppose your CSV files are in a directory called 'data'
-file_paths = glob("subset/*.csv")  # Get all csv files in data directory
+file_paths = glob("subset/*.csv")
 dataframes = []
 for fp in file_paths:
     df = pd.read_csv(fp, parse_dates=['Date'], index_col='Date')
@@ -30,13 +29,9 @@ for fp, df in zip(file_paths, dataframes):
     combined_data.append(df)
 
 full_dataset = pd.concat(combined_data, axis=0)
-# Now full_dataset has a 'Ticker' column indicating the stock.
 
 scaler = MinMaxScaler(feature_range=(0, 1))
-# For separate stocks:
-# dataframes[i][['Open','High','Low','Close','Volume']] = scaler.fit_transform(dataframes[i][['Open','High','Low','Close','Volume']]]
 
-# For combined:
 full_dataset[features + ['Target']] = scaler.fit_transform(full_dataset[features + ['Target']])
 
 def create_sequences(data, features=features, target='Target', window_size=50):
