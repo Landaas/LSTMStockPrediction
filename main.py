@@ -18,7 +18,7 @@ data = data.sort_values('Date')
 data.reset_index(drop=True, inplace=True)
 
 # Select features
-features = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+features = ['Open', 'High', 'Low', 'Close', 'Volume']
 
 # Initialize the scaler
 scaler = MinMaxScaler(feature_range=(0, 1))

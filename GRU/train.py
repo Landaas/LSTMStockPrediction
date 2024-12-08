@@ -5,31 +5,37 @@ from dataset import train_loader, val_loader
 import numpy as np
 
 input_size = X.shape[2]
-hidden_size = 64
-num_layers = 1
+hidden_size = 128
+num_layers = 2
 output_size = 1
 
 model = GRUModel(input_size, hidden_size, num_layers, output_size)
-criterion = torch.nn.MSELoss()  # For regression tasks
+criterion = torch.nn.L1Loss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 epochs = 100
+
 for epoch in range(epochs):
     model.train()
     train_loss = 0.0
+    test = []
     for X_batch, y_batch in train_loader:
         X_batch, y_batch = X_batch.to(device), y_batch.to(device)
 
         optimizer.zero_grad()
         outputs = model(X_batch)
+        print(outputs.squeeze(), y_batch)
+        exit()
         loss = criterion(outputs.squeeze(), y_batch)
         loss.backward()
         optimizer.step()
 
         train_loss += loss.item() * X_batch.size(0)
+
+        test.append(X_batch.cpu().numpy())
 
     train_loss /= len(train_loader.dataset)
 

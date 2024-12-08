@@ -1,31 +1,67 @@
+import pandas as pd
 import torch
-from torch.utils.data import Subset
-from dataset import test_loader, val_loader
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from load import scaler
+from sklearn.preprocessing import MinMaxScaler
+from load import create_sequences, scaler
+from torchmetrics.regression import MeanAbsolutePercentageError
+
+def mape(y_true, y_pred):
+    """
+    Calculate the Mean Absolute Percentage Error (MAPE) between two lists.
+    
+    Parameters:
+        y_true (list or array-like): Ground truth (correct) values
+        y_pred (list or array-like): Predicted values
+        
+    Returns:
+        float: MAPE value in percentage
+    """
+    # Convert inputs to numpy arrays for vectorized operations
+    y_true = np.array(y_true, dtype=float)
+    y_pred = np.array(y_pred, dtype=float)
+    
+    epsilon = 1e-8  # Small constant to prevent division by zero
+    # Compute MAPE
+    return np.mean(np.abs((y_true - y_pred) / (y_true + epsilon))) * 100
+
+
+
+import matplotlib.pyplot as plt
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = torch.load('models/test.pth', map_location=torch.device('cpu'))
-
+# Load the pre-trained model
+model = torch.load('models/test_epochs=50 (1).pth', map_location=device)
 model.eval()
-predictions = []
-true_values = []
 
+data = pd.read_csv('data/TOT.csv')
+data['Date'] = pd.to_datetime(data['Date'])
+data = data.sort_values('Date')
+data.reset_index(drop=True, inplace=True)
 
+features = ['Open', 'High', 'Low', 'Close', 'Volume']
+scaler = MinMaxScaler(feature_range=(0, 1))
+scaled_data = scaler.fit_transform(data[features])
+scaled_data = pd.DataFrame(scaled_data, columns=features)
+
+# Create sequences
+X_test, y_test = create_sequences(scaled_data, target='Close')
+
+# Convert X_test to a PyTorch tensor
+X_test_tensor = torch.from_numpy(np.array(X_test)).float().to(device)
+
+# Make predictions on the testing data
 with torch.no_grad():
-    for X_batch, y_batch in test_loader:
-        X_batch = X_batch.to(device)  
-        y_batch = y_batch.to(device)
-        
-        outputs = model(X_batch) 
-        
-        predictions.append(outputs.squeeze().cpu().numpy())
-        true_values.append(y_batch.cpu().numpy())
+    outputs = model(X_test_tensor)
+
+
+# Convert predictions to NumPy array
+predictions = outputs.cpu().numpy()
 
 predictions = np.concatenate(predictions)
-true_values = np.concatenate(true_values)
+true_values = y_test
+
+
 
 num_features = len(['Open','High','Low','Close','Volume'])
 close_col_idx = 3  
@@ -43,13 +79,16 @@ temp_true[:, close_col_idx] = true_values
 temp_true_inverted = scaler.inverse_transform(temp_true)
 true_values_inverted = temp_true_inverted[:, close_col_idx]
 
-import matplotlib.pyplot as plt
+mape_metric = mape(true_values_inverted, predictions_inverted)
+
+print(mape_metric)
 
 plt.figure(figsize=(12,6))
-plt.plot(true_values_inverted[:100], label='True Values')
-plt.plot(predictions_inverted[:100], label='Predictions')
-plt.title('Model Predictions vs True Values on Test Set')
-plt.xlabel('Time Step')
-plt.ylabel('Price')
+plt.plot(true_values_inverted, label='Actual Close Price')
+plt.plot(predictions_inverted, label='Predicted Close Price')
+plt.title('Actual vs Predicted Stock Prices')
+plt.xlabel('Time')
+plt.ylabel('Stock Price')
 plt.legend()
+plt.savefig('actual_vs_predicted_prices.png')
 plt.show()

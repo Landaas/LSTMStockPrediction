@@ -100,8 +100,8 @@ predictions_actual = close_scaler.inverse_transform(predictions)
 
 # Plot the actual vs predicted prices
 plt.figure(figsize=(12, 6))
-plt.plot(y_test_actual, label='Actual Close Price')
-plt.plot(predictions_actual, label='Predicted Close Price')
+plt.plot(y_test_actual[:100], label='Actual Close Price')
+plt.plot(predictions_actual[:100], label='Predicted Close Price')
 plt.title('Actual vs Predicted Stock Prices')
 plt.xlabel('Time')
 plt.ylabel('Stock Price')

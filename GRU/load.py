@@ -12,7 +12,8 @@ pre_days = 50
 file_paths = glob("subset/*.csv")  # Get all csv files in data directory
 dataframes = []
 for fp in file_paths:
-    df = pd.read_csv(fp, parse_dates=['Date'], index_col='Date')
+    df = pd.read_csv('your_data.csv', parse_dates=['Date'], index_col='Date')
+    df.dropna(inplace=True)
     df = df[features]
     df['Target'] = df['Close'].shift(-1)
     dataframes.append(df)
@@ -20,13 +21,13 @@ for fp in file_paths:
 
 combined_data = []
 for fp, df in zip(file_paths, dataframes):
-    ticker = fp.split('/')[-1].replace('.csv', '')
+    split = fp.split('/')
+    if len(split) < 2:
+        split = fp.split('\\')
+    ticker = split[-1].replace('.csv', '')
     df['Ticker'] = ticker
     df.dropna(inplace=True)
     combined_data.append(df)
-
-for i in range(len(dataframes)):
-    dataframes[i] = dataframes[i].ffill().bfill()  # Simple fill strategy
 
 full_dataset = pd.concat(combined_data, axis=0)
 # Now full_dataset has a 'Ticker' column indicating the stock.
@@ -36,9 +37,9 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 # dataframes[i][['Open','High','Low','Close','Volume']] = scaler.fit_transform(dataframes[i][['Open','High','Low','Close','Volume']]]
 
 # For combined:
-full_dataset[features] = scaler.fit_transform(full_dataset[features])
+full_dataset[features + ['Target']] = scaler.fit_transform(full_dataset[features + ['Target']])
 
-def create_sequences(data, features, target, window_size=30):
+def create_sequences(data, features=features, target='Target', window_size=50):
     X, y = [], []
     for i in range(len(data)-window_size):
         X.append(data[features].iloc[i:i+window_size].values)
