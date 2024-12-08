@@ -12,7 +12,7 @@ pre_days = 50
 file_paths = glob("subset/*.csv")  # Get all csv files in data directory
 dataframes = []
 for fp in file_paths:
-    df = pd.read_csv('your_data.csv', parse_dates=['Date'], index_col='Date')
+    df = pd.read_csv(fp, parse_dates=['Date'], index_col='Date')
     df.dropna(inplace=True)
     df = df[features]
     df['Target'] = df['Close'].shift(-1)

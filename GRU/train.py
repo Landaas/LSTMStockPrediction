@@ -27,8 +27,6 @@ for epoch in range(epochs):
 
         optimizer.zero_grad()
         outputs = model(X_batch)
-        print(outputs.squeeze(), y_batch)
-        exit()
         loss = criterion(outputs.squeeze(), y_batch)
         loss.backward()
         optimizer.step()

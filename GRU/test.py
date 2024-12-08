@@ -47,6 +47,10 @@ scaled_data = pd.DataFrame(scaled_data, columns=features)
 # Create sequences
 X_test, y_test = create_sequences(scaled_data, target='Close')
 
+train_size = int(len(X_test) * 0.8)
+X_test = X_test[train_size:]
+y_test = y_test[train_size:]
+
 # Convert X_test to a PyTorch tensor
 X_test_tensor = torch.from_numpy(np.array(X_test)).float().to(device)
 
@@ -81,7 +85,7 @@ true_values_inverted = temp_true_inverted[:, close_col_idx]
 
 mape_metric = mape(true_values_inverted, predictions_inverted)
 
-print(mape_metric)
+print('MAPE:', mape_metric)
 
 plt.figure(figsize=(12,6))
 plt.plot(true_values_inverted, label='Actual Close Price')
